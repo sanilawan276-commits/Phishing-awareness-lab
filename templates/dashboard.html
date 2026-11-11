@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Phishing Awareness Dashboard</title>
+
+    <style>
+
+        body {
+            font-family: Arial, sans-serif;
+            background: #eef2f7;
+            padding: 20px;
+        }
+
+        h1 {
+            color: #17365d;
+        }
+
+        .cards {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .card {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            flex: 1;
+            min-width: 140px;
+        }
+
+        .number {
+            font-size: 28px;
+            font-weight: bold;
+            color: #17365d;
+        }
+
+        .section {
+            background: white;
+            padding: 20px;
+            margin-top: 20px;
+            border-radius: 8px;
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            min-width: 700px;
+            border-collapse: collapse;
+        }
+
+        th, td {
+            padding: 12px;
+            border-bottom: 1px solid #ddd;
+            text-align: left;
+        }
+
+        th {
+            background: #17365d;
+            color: white;
+        }
+
+        .account {
+            background: #eef4ff;
+            padding: 15px;
+            margin: 12px 0;
+            border-radius: 8px;
+        }
+
+        a {
+            display: inline-block;
+            margin: 15px 15px 0 0;
+        }
+
+    </style>
+
+</head>
+
+<body>
+
+<h1>Phishing Awareness Lab Dashboard</h1>
+
+<p>
+    Training records from the awareness demonstration.
+</p>
+
+<div class="cards">
+
+    <div class="card">
+        <p>Total Events</p>
+        <div class="number">{{ total_events }}</div>
+    </div>
+
+    <div class="card">
+        <p>Page Visits</p>
+        <div class="number">{{ total_visits }}</div>
+    </div>
+
+    <div class="card">
+        <p>Account Selections</p>
+        <div class="number">{{ total_selections }}</div>
+    </div>
+
+</div>
+
+<div class="section">
+
+    <h2>Stored Fictional Accounts</h2>
+
+    {% for account in demo_accounts %}
+
+    <div class="account">
+
+        <h3>{{ account.label }}</h3>
+
+        <p>
+            <strong>Account ID:</strong>
+            {{ account.id }}
+        </p>
+
+        <p>
+            <strong>Fictional email:</strong>
+            {{ account.fictional_email }}
+        </p>
+
+        <p>
+            <strong>Fictional password:</strong>
+            {{ account.fictional_password }}
+        </p>
+
+        <p>
+            <strong>Storage:</strong>
+            Permanent demonstration record
+        </p>
+
+    </div>
+
+    {% endfor %}
+
+</div>
+
+<div class="section">
+
+    <h2>Visitor Activity</h2>
+
+    <table>
+
+        <thead>
+
+            <tr>
+                <th>ID</th>
+                <th>Test ID</th>
+                <th>Event</th>
+                <th>Status</th>
+                <th>Full IP Address</th>
+                <th>Date and Time</th>
+            </tr>
+
+        </thead>
+
+        <tbody>
+
+            {% for item in results %}
+
+            <tr>
+
+                <td>{{ item.id }}</td>
+
+                <td>{{ item.test_id }}</td>
+
+                <td>{{ item.event_type }}</td>
+
+                <td>{{ item.status }}</td>
+
+                <td>{{ item.ip_address }}</td>
+
+                <td>{{ item.created_at }}</td>
+
+            </tr>
+
+            {% else %}
+
+            <tr>
+                <td colspan="6">No activity recorded yet.</td>
+            </tr>
+
+            {% endfor %}
+
+        </tbody>
+
+    </table>
+
+</div>
+
+<a href="/export">
+    Download CSV Report
+</a>
+
+<a href="/">
+    Return to Homepage
+</a>
+
+</body>
+
+</html>

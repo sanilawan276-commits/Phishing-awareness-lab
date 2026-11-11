@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Phishing Awareness Lab</title>
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f1f5f9;
+            margin: 0;
+            padding: 20px;
+            color: #1e293b;
+        }
+
+        .container {
+            max-width: 750px;
+            margin: 25px auto;
+            background: white;
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 3px 12px #00000015;
+        }
+
+        h1 { color: #173b69; }
+
+        .notice, .account, .exercise {
+            padding: 15px;
+            margin: 18px 0;
+            border-radius: 8px;
+        }
+
+        .notice {
+            background: #fff7ed;
+            border-left: 4px solid #f59e0b;
+        }
+
+        .account, .exercise {
+            background: #f8fafc;
+            border: 1px solid #cbd5e1;
+        }
+
+        input[type="email"], input[type="password"] {
+            width: 100%;
+            box-sizing: border-box;
+            padding: 12px;
+            margin: 8px 0 15px;
+            border: 1px solid #94a3b8;
+            border-radius: 6px;
+        }
+
+        button {
+            background: #174a7e;
+            color: white;
+            padding: 12px 18px;
+            border: 0;
+            border-radius: 6px;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+
+        button:disabled {
+            background: #94a3b8;
+        }
+
+        #message {
+            padding: 12px;
+            background: #e0f2fe;
+            border-radius: 6px;
+            margin-top: 15px;
+        }
+
+        [hidden] { display: none !important; }
+
+        a { color: #174a7e; }
+    </style>
+</head>
+
+<body>
+<div class="container">
+
+    <h1>Phishing Awareness Lab</h1>
+    <p>Educational cybersecurity training demonstration.</p>
+
+    <div class="notice">
+        <h3>Training and Privacy Notice</h3>
+        <p>
+            This exercise uses predefined fictional accounts.
+            The email and password you type are checked only in
+            this browser. They are never sent to or stored by
+            the server. After consent, training activity is recorded.
+        </p>
+    </div>
+
+    <label>
+        <input type="checkbox" id="consent">
+        I understand and agree to this training exercise.
+    </label>
+
+    <br>
+
+    <button type="button" onclick="recordVisit()">
+        Agree and Start Training
+    </button>
+
+    <p id="message" role="status" aria-live="polite">
+        Please read the notice and agree to begin.
+    </p>
+
+    <section id="training" hidden>
+
+        <h2>Fictional Account Examples</h2>
+        <p>Use one of these fictional examples in the exercise.</p>
+
+        {% for account in demo_accounts %}
+        <div class="account">
+            <h3>{{ account.label }}</h3>
+            <p><strong>Fictional email:</strong> {{ account.email }}</p>
+            <p><strong>Fictional password:</strong> {{ account.password }}</p>
+        </div>
+        {% endfor %}
+
+        <div class="exercise">
+            <h2>Demonstration Login Exercise</h2>
+
+            <label for="email">Fictional Email</label>
+            <input
+                type="email"
+                id="email"
+                placeholder="Enter a fictional demo email"
+                autocomplete="off"
+            >
+
+            <label for="password">Fictional Password</label>
+            <input
+                type="password"
+                id="password"
+                placeholder="Enter a fictional demo password"
+                autocomplete="off"
+            >
+
+            <button type="button" onclick="submitExercise()">
+                Submit Training Example
+            </button>
+
+            <p id="result" role="status" aria-live="polite"></p>
+        </div>
+
+    </section>
+
+    <p><a href="/dashboard">Open Training Dashboard</a></p>
+
+</div>
+
+<script>
+let consentGiven = false;
+
+async function recordVisit() {
+    const consent = document.getElementById("consent").checked;
+    const message = document.getElementById("message");
+
+    if (!consent) {
+        message.textContent = "Please agree to the training notice first.";
+        return;
+    }
+
+    message.textContent = "Starting training...";
+
+    try {
+        const response = await fetch("/record_visit", {
+            method: "POST",
+            headers: {"Content-Type": "application/json"},
+            body: JSON.stringify({consent: true})
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+            throw new Error(data.message || "Could not start training.");
+        }
+
+        consentGiven = true;
+        message.textContent = data.message;
+        document.getElementById("training").hidden = false;
+
+    } catch (error) {
+        message.textContent = "Error: " + error.message;
+    }
+}
+
+async function submitExercise() {
+    const email = document.getElementById("email").value.trim();
+    const password = document.getElementById("password").value;
+    const result = document.getElementById("result");
+
+    if (!consentGiven) {
+        result.textContent = "Please agree to the training notice first.";
+        return;
+    }
+
+    if (!email || !password) {
+        result.textContent = "Enter the fictional example details first.";
+        return;
+    }
+
+    // Compare the values locally in this browser.
+    // Do not send the email or password to the server.
+    const examples = [
+        {
+            id: "DEMO-001",
+            email: "demo1@example.com",
+            password: "TrainingDemo123!"
+        },
+        {
+            id: "DEMO-002",
+            email: "demo2@example.com",
+            password: "CyberDemo456!"
+        }
+    ];
+
+    const matched = examples.find(account =>
+        account.email === email &&
+        account.password === password
+    );
+
+    // Clear the password field after the local comparison.
+    document.getElementById("password").value = "";
+
+    if (!matched) {
+        result.textContent =
+            "This does not match a predefined fictional account. " +
+            "Check the example credentials and try again.";
+        return;
+    }
+
+    result.textContent = "Example matched. Recording training activity...";
+
+    try {
+        // Only the predefined account ID is sent.
+        const response = await fetch("/select_account", {
+            method: "POST",
+            headers: {"Content-Type": "application/json"},
+            body: JSON.stringify({
+                consent: true,
+                account_id: matched.id
+            })
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+            throw new Error(data.message || "Training record failed.");
+        }
+
+        result.textContent =
+            "Training example completed successfully. " +
+            "Now review the warning signs: check the website address, " +
+            "look for unusual requests, and never enter real passwords " +
+            "on suspicious pages.";
+
+    } catch (error) {
+        result.textContent = "Error: " + error.message;
+    }
+}
+</script>
+
+</body>
+</html>
